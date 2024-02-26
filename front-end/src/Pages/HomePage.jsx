@@ -8,11 +8,12 @@ import {
   Tab,
   TabPanels,
   TabPanel,
+  Image,
 } from "@chakra-ui/react";
 import Login from "../Components/auth/Login";
 import Signup from "../Components/auth/Signup";
 import { useNavigate } from "react-router-dom";
-import { ChatContext } from "../Context/ChatProvider";
+import logo from "../Components/Assets/chatLogo.png"
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -36,9 +37,25 @@ const HomePage = () => {
         borderRadius="lg"
         borderWidth="1px"
       >
-        <Text fontSize="4xl" fontFamily="Work sans" color="black">
-          Talk-A-Tive
-        </Text>
+        <Text
+            fontFamily="fantasy !important"
+            fontSize="2xl"
+            letterSpacing="2px"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            
+          >
+            <Image
+              fontFamily="Roboto"
+              display="inline-block"
+              src={logo}
+              alt="logo"
+              boxSize="45px"
+              objectFit="contain"
+            />
+            Talk-A-Tive
+          </Text>
       </Box>
       <Box bg="white" w="100%" p={4} borderRadius="lg" borderWidth="1px">
         <Tabs isFitted variant="soft-rounded">

@@ -9,29 +9,48 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
+  IconButton,
+  Image,
   Input,
   Menu,
   MenuButton,
   MenuDivider,
   MenuItem,
   MenuList,
+  Show,
   Spinner,
   Text,
   Tooltip,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import React, { useContext, useState } from "react";
-import { BellIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import React, { useContext, useRef, useState } from "react";
+import { BellIcon, ChevronDownIcon, HamburgerIcon } from "@chakra-ui/icons";
 import { ChatContext } from "../Context/ChatProvider";
 import ProfileModal from "./ProfileModal";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ChatLoading from "./ChatLoading";
 import UserListItem from "./UserListItem";
+import { getSender } from "../utils/ChatHelper";
+import HamburgerDrawer from "./HamburgerDrawer";
+import logo from "./Assets/chatLogo.png";
+
+const badgeStyles = {
+  position: "absolute",
+  top: "-6px",
+  right: "25px",
+  padding: "5px 10px",
+  borderRadius: "50%",
+  backgroundColor: "red",
+  color: "white",
+  fontSize: "10px",
+  fontWeight: "bold",
+};
 
 const SideDrawer = () => {
-  const { user, setSelectedChat, chats, setChats } = useContext(ChatContext);
+  const { user, setSelectedChat, chats, setChats, notification, setNotification } =
+    useContext(ChatContext);
   const navigate = useNavigate();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -68,7 +87,7 @@ const SideDrawer = () => {
 
       const { data } = await axios.get(`/api/user?search=${search}`, config);
       setLoading(false);
-      setSearch("")
+      setSearch("");
       setSearchResult(data);
     } catch (error) {
       setLoading(false);
@@ -83,8 +102,8 @@ const SideDrawer = () => {
     }
   };
 
-  const accessChat = async(userId) => {
-    console.log(userId)
+  const accessChat = async (userId) => {
+    console.log(userId);
     try {
       setLoadingChat(true);
 
@@ -95,9 +114,9 @@ const SideDrawer = () => {
         },
       };
 
-      const {data} = await axios.post("/api/chat", {userId}, config);
+      const { data } = await axios.post("/api/chat", { userId }, config);
 
-      if(!chats.find((c) => c._id === data._id)){
+      if (!chats.find((c) => c._id === data._id)) {
         setChats([data, ...chats]);
       }
       setSelectedChat(data);
@@ -118,51 +137,146 @@ const SideDrawer = () => {
 
   return (
     <>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        bg="white"
-        w="100%"
-        p="5px 10px"
-        borderWidth="5px"
-      >
-        <Tooltip label="Search Users to chat" hasArrow placement="bottom-end">
-          <Button variant="ghost" onClick={onOpen}>
-            <i className="fa-solid fa-magnifying-glass"></i>
-            <Text d={{ base: "none", md: "flex" }} px="4">
-              Search User
-            </Text>
-          </Button>
-        </Tooltip>
+      <Show above="sm">
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          bg="white"
+          w="100%"
+          p="5px 10px"
+          borderWidth="5px"
+        >
+          <Tooltip label="Search Users to chat" hasArrow placement="bottom-end">
+            <Button variant="ghost" onClick={onOpen}>
+              <i className="fa-solid fa-magnifying-glass"></i>
+              <Text d={{ base: "none", md: "flex" }} px="4">
+                Search User
+              </Text>
+            </Button>
+          </Tooltip>
 
-        <Text fontSize="2xl" fontFamily="Roboto">
-          Talk-A-Tive
-        </Text>
+          <Text
+            fontFamily="fantasy"
+            fontSize="2xl"
+            letterSpacing="2px"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Image
+              fontFamily="Roboto"
+              display="inline-block"
+              src={logo}
+              alt="logo"
+              boxSize="45px"
+              objectFit="contain"
+            />
+            Talk-A-Tive
+          </Text>
 
-        <div>
-          <Menu>
-            <MenuButton p={1}>
-              <BellIcon fontSize="2xl" m={1} />{" "}
-            </MenuButton>
-            {/* <MenuList>
-            <MenuItem>Download</MenuItem>
-          </MenuList> */}
-          </Menu>
-          <Menu>
-            <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-              <Avatar size="sm" cursor="pointer" name={user.name} src={user.pic} />
-            </MenuButton>
-            <MenuList>
-              <ProfileModal user={user}>
-                <MenuItem>My Profile</MenuItem>
-              </ProfileModal>
-              <MenuDivider />
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </MenuList>
-          </Menu>
-        </div>
-      </Box>
+          <div>
+            <Menu>
+              <MenuButton style={{ position: "relative", display: "inline-block" }} p={1}>
+                {notification.length ? (
+                  <span style={badgeStyles}>{notification.length} </span>
+                ) : null}
+                <BellIcon fontSize="2xl" m={1} />{" "}
+              </MenuButton>
+              <MenuList pl={2}>
+                {!notification?.length && "No New Messages"}
+                {notification.map((msg) => (
+                  <MenuItem
+                    key={msg._id}
+                    onClick={() => {
+                      setSelectedChat(msg.chat);
+                      setNotification(notification.filter((n) => n !== msg));
+                    }}
+                  >
+                    {msg.chat.isGroupChat
+                      ? `New Message from ${msg.chat.chatName}`
+                      : `New Message from ${getSender(user, msg.chat.users)}`}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Menu>
+            <Menu>
+              <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+                <Avatar size="sm" cursor="pointer" name={user.name} src={user.pic} />
+              </MenuButton>
+              <MenuList>
+                <ProfileModal user={user}>
+                  <MenuItem>My Profile</MenuItem>
+                </ProfileModal>
+                <MenuDivider />
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </MenuList>
+            </Menu>
+          </div>
+        </Box>
+      </Show>
+
+      {/* below md screen */}
+      <Show below="sm">
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          bg="white"
+          w="100%"
+          p="5px 10px"
+          borderWidth="5px"
+        >
+          <Tooltip label="Search Users to chat" hasArrow placement="bottom-end">
+            <Button variant="ghost" onClick={onOpen}>
+              <i className="fa-solid fa-magnifying-glass"></i>
+              <Text display={{ base: "none", md: "flex" }} px="4">
+                Search User
+              </Text>
+            </Button>
+          </Tooltip>
+
+          <Text
+            fontFamily="fantasy"
+            fontSize="2xl"
+            letterSpacing="1px"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            Talk-A-Tive
+          </Text>
+
+          <div>
+            <Menu>
+              <MenuButton style={{ position: "relative", display: "inline-block" }} p={1}>
+                {notification.length ? (
+                  <span style={badgeStyles}>{notification.length} </span>
+                ) : null}
+                <BellIcon fontSize="2xl" m={1} />{" "}
+              </MenuButton>
+              <MenuList pl={2}>
+                {!notification?.length && "No New Messages"}
+                {notification.map((msg) => (
+                  <MenuItem
+                    key={msg._id}
+                    onClick={() => {
+                      setSelectedChat(msg.chat);
+                      setNotification(notification.filter((n) => n !== msg));
+                    }}
+                  >
+                    {msg.chat.isGroupChat
+                      ? `New Message from ${msg.chat.chatName}`
+                      : `New Message from ${getSender(user, msg.chat.users)}`}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Menu>
+
+            <HamburgerDrawer handleLogout={handleLogout} />
+          </div>
+        </Box>
+      </Show>
 
       <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
         <DrawerOverlay />
