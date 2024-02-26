@@ -1,14 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
-import axios from "axios";
+import React, { useContext, useState } from "react";
 import { ChatContext } from "../Context/ChatProvider";
-import { useNavigate } from "react-router-dom";
 import { Box } from "@chakra-ui/react";
 import SideDrawer from "../Components/SideDrawer";
 import MyChats from "../Components/MyChats";
 import ChatBox from "../Components/ChatBox";
 
 const ChatPage = () => {
-  const navigate = useNavigate();
   const { user } = useContext(ChatContext);
   const [fetchAgain, setFetchAgain] = useState(false);
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Container,
   Box,
@@ -23,6 +23,7 @@ const HomePage = () => {
         if(userInfo){
             navigate("/chat-page");
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
   return (

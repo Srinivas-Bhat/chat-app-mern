@@ -9,7 +9,6 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
-  IconButton,
   Image,
   Input,
   Menu,
@@ -24,8 +23,8 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import React, { useContext, useRef, useState } from "react";
-import { BellIcon, ChevronDownIcon, HamburgerIcon } from "@chakra-ui/icons";
+import React, { useContext, useState } from "react";
+import { BellIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { ChatContext } from "../Context/ChatProvider";
 import ProfileModal from "./ProfileModal";
 import { useNavigate } from "react-router-dom";
